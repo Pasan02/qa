@@ -55,8 +55,13 @@ jobs:
         working-directory: frontend
         run: |
           npm run dev &
-          sleep 15
-          echo "Frontend started"
+          echo "Frontend started in background"
+          
+      - name: Wait for frontend to be ready
+        run: |
+          echo "Waiting for frontend to start..."
+          timeout 60s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+          echo "Frontend is ready"
 
       - name: Setup Chrome for UI tests
         uses: browser-actions/setup-chrome@latest
