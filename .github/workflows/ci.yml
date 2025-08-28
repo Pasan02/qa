@@ -51,16 +51,20 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Start frontend for UI tests
+      - name: Build frontend for CI
+        working-directory: frontend
+        run: npm run build
+
+      - name: Preview frontend (simulates prod environment)
         working-directory: frontend
         run: |
-          npm run dev &
-          echo "Frontend started in background"
+          npm run preview -- --port 5173 --host 0.0.0.0 &
+          echo "Frontend preview started"
           
       - name: Wait for frontend to be ready
         run: |
           echo "Waiting for frontend to start..."
-          timeout 60s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+          timeout 30s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
           echo "Frontend is ready"
 
       - name: Setup Chrome for UI tests
