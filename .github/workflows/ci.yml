@@ -28,6 +28,44 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build and run tests
+      - name: Build project
         working-directory: backend
-        run: mvn clean verify
+        run: mvn clean compile
+
+      - name: Run unit tests
+        working-directory: backend
+        run: mvn test -Dtest="*Test,!*UITest"
+
+      - name: Run integration tests
+        working-directory: backend
+        run: mvn test -Dtest="*ApiTest"
+
+      - name: Setup Chrome for UI tests
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Start frontend for UI tests
+        run: |
+          cd frontend
+          npm ci
+          npm run dev &
+          sleep 10
+
+      - name: Run UI automation tests
+        working-directory: backend
+        run: mvn test -Dtest="*UITest"
+
+      - name: Run BDD tests
+        working-directory: backend
+        run: mvn test -Dtest="CucumberTest"
+
+      - name: Generate test report
+        working-directory: backend
+        run: mvn surefire-report:report
+        if: always()
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: backend/target/surefire-reports/
