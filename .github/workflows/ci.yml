@@ -34,25 +34,40 @@ jobs:
 
       - name: Run unit tests
         working-directory: backend
-        run: mvn test -Dtest="*Test,!*UITest"
+        run: mvn test -Dtest="*ServiceTest,BackendApplicationTests"
 
       - name: Run integration tests
         working-directory: backend
         run: mvn test -Dtest="*ApiTest"
 
-      - name: Setup Chrome for UI tests
-        uses: browser-actions/setup-chrome@latest
+      - name: Setup Node.js for frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
       - name: Start frontend for UI tests
+        working-directory: frontend
         run: |
-          cd frontend
-          npm ci
           npm run dev &
-          sleep 10
+          sleep 15
+          echo "Frontend started"
+
+      - name: Setup Chrome for UI tests
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
 
       - name: Run UI automation tests
         working-directory: backend
-        run: mvn test -Dtest="*UITest"
+        run: mvn test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
+        env:
+          DISPLAY: ":99"
 
       - name: Run BDD tests
         working-directory: backend

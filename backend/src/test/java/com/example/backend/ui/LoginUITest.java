@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
@@ -17,7 +18,24 @@ public class LoginUITest {
     @BeforeEach
     void setUp() {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+        
+        ChromeOptions options = new ChromeOptions();
+        
+        // Add arguments for CI environment
+        String chromeArgs = System.getProperty("webdriver.chrome.args");
+        if (chromeArgs != null) {
+            for (String arg : chromeArgs.split(",")) {
+                options.addArguments(arg);
+            }
+        }
+        
+        // Default arguments for stability
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-extensions");
+        options.addArguments("--remote-allow-origins=*");
+        
+        driver = new ChromeDriver(options);
     }
 
     @AfterEach
