@@ -13,9 +13,27 @@ const Auth = ({ onAuth }) => {
       setError('Please fill all fields');
       return;
     }
-    // Simple local auth (no backend)
-    localStorage.setItem('user', email);
-    onAuth(email);
+    // Call backend auth endpoints
+    const base = 'http://localhost:8081/api/auth';
+    const url = isLogin ? `${base}/login` : `${base}/signup`;
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    }).then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        setError(text || 'Auth failed');
+        return;
+      }
+      const data = await res.json();
+      // login returns { token }
+      const token = data.token || null;
+      onAuth(token, email);
+    }).catch(err => {
+      setError('Network error');
+      console.error('Auth error', err);
+    });
   };
 
   return (

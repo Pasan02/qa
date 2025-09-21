@@ -1,16 +1,20 @@
 package com.example.backend.api;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class TaskApiTest {
 
     @LocalServerPort
@@ -31,7 +35,8 @@ class TaskApiTest {
             .post("/api/tasks")
         .then()
             .statusCode(201)
-            .body("title", equalTo("Buy milk"));
+            .body("title", equalTo("Buy milk"))
+            .body("id", notNullValue()); // Should have database-generated ID
     }
 
     @Test

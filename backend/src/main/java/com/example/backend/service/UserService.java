@@ -2,8 +2,11 @@ package com.example.backend.service;
 
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+
+import com.example.backend.repository.UserRepository;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
@@ -18,6 +21,9 @@ import jakarta.validation.Validator;
 public class UserService {
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    
+    @Autowired
+    private UserRepository userRepository;
 
     public User signup(@Valid SignupRequest request) {
         Set<ConstraintViolation<SignupRequest>> violations = validator.validate(request);
@@ -25,7 +31,14 @@ public class UserService {
             String message = violations.iterator().next().getMessage();
             throw new IllegalArgumentException(message);
         }
-        // In real app, save to DB, hash password, etc.
-        return new User(request.email(), request.password());
+        
+        // Check if user already exists
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new IllegalArgumentException("User already exists with this email");
+        }
+        
+        // Create and save user to database
+        User user = new User(request.email(), request.password());
+        return userRepository.save(user);
     }
 }

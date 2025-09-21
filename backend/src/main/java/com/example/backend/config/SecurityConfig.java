@@ -3,17 +3,21 @@ package com.example.backend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // Development-safe permissive configuration: allow all requests to simplify local testing.
+        // IMPORTANT: replace with proper security (JWT or session cookies, password hashing) before production.
         http
-            .csrf().disable()
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/tasks").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             );
         return http.build();
     }

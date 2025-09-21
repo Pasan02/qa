@@ -1,7 +1,10 @@
 package com.example.backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+
+import com.example.backend.repository.TaskRepository;
 
 import jakarta.validation.Valid;
 
@@ -11,6 +14,9 @@ import jakarta.validation.Valid;
 @Service
 @Validated
 public class TaskService {
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     /**
      * Creates a new Task from the given request.
@@ -23,7 +29,19 @@ public class TaskService {
         if (request.title() == null || request.title().trim().isEmpty()) {
             throw new IllegalArgumentException("Task title must not be blank");
         }
-        // Here you’d normally save to DB, for now return dummy Task
-        return new Task(request.title(), request.description());
+        
+        // Create and save task to database
+        Task task = new Task(request.title(), request.description());
+        return taskRepository.save(task);
+    }
+
+    public Task createTask(@Valid TaskRequest request, Long ownerId) {
+        Task task = new Task(request.title(), request.description());
+        if (ownerId != null) {
+            User owner = new User();
+            owner.setId(ownerId);
+            task.setOwner(owner);
+        }
+        return taskRepository.save(task);
     }
 }
