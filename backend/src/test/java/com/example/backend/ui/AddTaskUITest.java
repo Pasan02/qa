@@ -12,13 +12,25 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import com.example.backend.service.UserService;
+import com.example.backend.service.SignupRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class AddTaskUITest {
+
+    @Autowired
+    private UserService userService;
 
     private WebDriver driver;
 
     @BeforeEach
     void setUp() {
+        // Only create test user in CI environment
+        if (System.getenv("GITHUB_ACTIONS") != null) {
+            try {
+                userService.signup(new SignupRequest("test@example.com", "password123"));
+            } catch (Exception ignored) {}
+        }
         WebDriverManager.chromedriver().setup();
         
         ChromeOptions options = new ChromeOptions();
