@@ -75,7 +75,7 @@ jobs:
       - name: Run UI automation tests
         working-directory: backend
         run: |
-          ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080,--user-data-dir=/tmp/chrome-user-data-${{ github.run_id }}"
+          ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080,--disable-extensions,--remote-allow-origins=*,--user-data-dir=/tmp/chrome-user-data-${{ github.run_id }}-${{ github.job }}"
         env:
           DISPLAY: ":99"
 
