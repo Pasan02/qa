@@ -28,9 +28,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Make Maven Wrapper executable
-        run: chmod +x backend/mvnw
-
       - name: Build and run all backend tests
         working-directory: backend
         run: |
@@ -71,11 +68,9 @@ jobs:
         with:
           chrome-version: stable
 
-
       - name: Run UI automation tests
         working-directory: backend
-        run: |
-          ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080,--disable-extensions,--remote-allow-origins=*,--user-data-dir=/tmp/chrome-user-data-${{ github.run_id }}-${{ github.job }}"
+        run: mvn test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
         env:
           DISPLAY: ":99"
 

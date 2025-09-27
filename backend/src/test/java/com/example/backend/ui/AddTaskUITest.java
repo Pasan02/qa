@@ -25,12 +25,7 @@ public class AddTaskUITest {
         String chromeArgs = System.getProperty("webdriver.chrome.args");
         if (chromeArgs != null) {
             for (String arg : chromeArgs.split(",")) {
-                if (arg.startsWith("--user-data-dir")) {
-                    String uniqueDir = System.getProperty("java.io.tmpdir") + "/chrome-profile-" + java.util.UUID.randomUUID();
-                    options.addArguments("--user-data-dir=" + uniqueDir);
-                } else {
-                    options.addArguments(arg);
-                }
+                options.addArguments(arg);
             }
         }
         
