@@ -9,6 +9,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.time.Duration;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class AddTaskUITest {
@@ -49,20 +54,19 @@ public class AddTaskUITest {
     void addTask_displaysInList() {
         driver.get("http://localhost:5173/login");
 
-        // Login first
-        driver.findElement(By.id("email")).sendKeys("test@example.com");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
+        emailInput.sendKeys("test@example.com");
         driver.findElement(By.id("password")).sendKeys("password123");
         driver.findElement(By.id("login-btn")).click();
 
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-
-        // Add task
-        driver.findElement(By.id("task-title")).sendKeys("Buy milk");
+        // Wait for task input to appear
+        WebElement taskTitleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("task-title")));
+        taskTitleInput.sendKeys("Buy milk");
         driver.findElement(By.id("add-task-btn")).click();
 
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-
-        // Verify task appears
+        // Wait for task to appear in body
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Buy milk"));
         String bodyText = driver.findElement(By.tagName("body")).getText();
         assertThat(bodyText).contains("Buy milk");
     }

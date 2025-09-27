@@ -9,6 +9,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.time.Duration;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class LoginUITest {
@@ -51,15 +56,14 @@ public class LoginUITest {
     void login_withValidCredentials_showsTaskTracker() {
         driver.get("http://localhost:5173/login");
 
-        driver.findElement(By.id("email")).sendKeys("test@example.com");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
+        emailInput.sendKeys("test@example.com");
         driver.findElement(By.id("password")).sendKeys("password123");
         driver.findElement(By.id("login-btn")).click();
 
-        // Wait for UI update
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-
-        // Check for welcome message
-        assertThat(driver.findElement(By.cssSelector(".user-bar span")).getText())
-            .contains("Welcome, test@example.com");
+        // Wait for user bar to appear
+        WebElement userBar = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".user-bar span")));
+        assertThat(userBar.getText()).contains("Welcome, test@example.com");
     }
 }
