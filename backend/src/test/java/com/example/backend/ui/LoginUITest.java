@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
@@ -55,8 +57,9 @@ public class LoginUITest {
         driver.findElement(By.id("password")).sendKeys("password123");
         driver.findElement(By.id("login-btn")).click();
 
-        // Wait for UI update
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+        // Wait for welcome message to appear
+        WebDriverWait wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".user-bar span")));
 
         // Check for welcome message
         assertThat(driver.findElement(By.cssSelector(".user-bar span")).getText())

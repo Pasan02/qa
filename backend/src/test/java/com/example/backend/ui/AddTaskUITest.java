@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
@@ -47,23 +49,26 @@ public class AddTaskUITest {
 
     @Test
     void addTask_displaysInList() {
-        driver.get("http://localhost:5173/login");
+    driver.get("http://localhost:5173/login");
 
-        // Login first
-        driver.findElement(By.id("email")).sendKeys("test@example.com");
-        driver.findElement(By.id("password")).sendKeys("passsword123");
-        driver.findElement(By.id("login-btn")).click();
+    // Login first
+    driver.findElement(By.id("email")).sendKeys("test@example.com");
+    driver.findElement(By.id("password")).sendKeys("password123");
+    driver.findElement(By.id("login-btn")).click();
 
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+    // Wait for task title input to appear
+    WebDriverWait wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(10));
+    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("task-title")));
 
-        // Add task
-        driver.findElement(By.id("task-title")).sendKeys("Buy milk");
-        driver.findElement(By.id("add-task-btn")).click();
+    // Add task
+    driver.findElement(By.id("task-title")).sendKeys("Buy milk");
+    driver.findElement(By.id("add-task-btn")).click();
 
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+    // Wait for task to appear in list
+    wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Buy milk"));
 
-        // Verify task appears
-        String bodyText = driver.findElement(By.tagName("body")).getText();
-        assertThat(bodyText).contains("Buy milk");
+    // Verify task appears
+    String bodyText = driver.findElement(By.tagName("body")).getText();
+    assertThat(bodyText).contains("Buy milk");
     }
 }
