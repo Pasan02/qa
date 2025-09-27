@@ -34,6 +34,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Make Maven wrapper executable
+        working-directory: backend
+        run: chmod +x ./mvnw
+
       - name: Setup Node.js for frontend
         uses: actions/setup-node@v4
         with:
