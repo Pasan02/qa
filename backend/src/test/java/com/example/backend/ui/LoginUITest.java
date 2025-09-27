@@ -8,32 +8,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import com.example.backend.service.UserService;
-import com.example.backend.service.SignupRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 
-
-@SpringBootTest
-class LoginUITest {
-
-    @Autowired
-    private UserService userService;
+public class LoginUITest {
 
     private WebDriver driver;
 
     @BeforeEach
     void setUp() {
-        // Only create test user in CI environment
-        if (System.getenv("GITHUB_ACTIONS") != null) {
-            try {
-                userService.signup(new SignupRequest("test@example.com", "password123"));
-            } catch (Exception ignored) {}
-        }
         WebDriverManager.chromedriver().setup();
         
         ChromeOptions options = new ChromeOptions();
@@ -72,9 +55,8 @@ class LoginUITest {
         driver.findElement(By.id("password")).sendKeys("password123");
         driver.findElement(By.id("login-btn")).click();
 
-        // Wait for welcome message to appear
-        WebDriverWait wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".user-bar span")));
+        // Wait for UI update
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 
         // Check for welcome message
         assertThat(driver.findElement(By.cssSelector(".user-bar span")).getText())

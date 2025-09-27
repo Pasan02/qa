@@ -8,31 +8,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import com.example.backend.service.UserService;
-import com.example.backend.service.SignupRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class AddTaskUITest {
-@SpringBootTest
-
-    @Autowired
-    private UserService userService;
 
     private WebDriver driver;
 
     @BeforeEach
     void setUp() {
-        // Only create test user in CI environment
-        if (System.getenv("GITHUB_ACTIONS") != null) {
-            try {
-                userService.signup(new SignupRequest("test@example.com", "password123"));
-            } catch (Exception ignored) {}
-        }
         WebDriverManager.chromedriver().setup();
         
         ChromeOptions options = new ChromeOptions();
@@ -63,26 +47,23 @@ public class AddTaskUITest {
 
     @Test
     void addTask_displaysInList() {
-    driver.get("http://localhost:5173/login");
+        driver.get("http://localhost:5173/login");
 
-    // Login first
-    driver.findElement(By.id("email")).sendKeys("test@example.com");
-    driver.findElement(By.id("password")).sendKeys("password123");
-    driver.findElement(By.id("login-btn")).click();
+        // Login first
+        driver.findElement(By.id("email")).sendKeys("test@example.com");
+        driver.findElement(By.id("password")).sendKeys("passsword123");
+        driver.findElement(By.id("login-btn")).click();
 
-    // Wait for task title input to appear
-    WebDriverWait wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(10));
-    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("task-title")));
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 
-    // Add task
-    driver.findElement(By.id("task-title")).sendKeys("Buy milk");
-    driver.findElement(By.id("add-task-btn")).click();
+        // Add task
+        driver.findElement(By.id("task-title")).sendKeys("Buy milk");
+        driver.findElement(By.id("add-task-btn")).click();
 
-    // Wait for task to appear in list
-    wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Buy milk"));
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 
-    // Verify task appears
-    String bodyText = driver.findElement(By.tagName("body")).getText();
-    assertThat(bodyText).contains("Buy milk");
+        // Verify task appears
+        String bodyText = driver.findElement(By.tagName("body")).getText();
+        assertThat(bodyText).contains("Buy milk");
     }
 }
