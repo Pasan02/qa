@@ -79,10 +79,7 @@ jobs:
           echo "Waiting for frontend to start..."
           timeout 90s bash -c 'until curl -f http://localhost:5173 >/dev/null 2>&1; do sleep 2; done' || (echo "Frontend failed to start" && exit 1)
           echo "Frontend is ready"
-          # Check for login page and main UI selectors
-          sleep 5
-          curl -s http://localhost:5173/login | grep -q "<form" || (echo "Login form not found on /login" && exit 1)
-          curl -s http://localhost:5173 | grep -q "user-bar" || (echo ".user-bar not found on main page" && exit 1)
+          # Rely on Selenium for UI verification
 
       - name: Setup Chrome for UI tests
         uses: browser-actions/setup-chrome@latest
