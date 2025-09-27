@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: CI/CD Pipeline
 
 on:
   push:
@@ -9,6 +9,12 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      # Virtual display for UI tests
+      xvfb:
+        image: selenium/standalone-chrome:latest
+        options: --shm-size=2g
 
     steps:
       - name: Checkout code
@@ -28,14 +34,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build and run all backend tests
-        working-directory: backend
-        run: |
-          ./mvnw clean test
       - name: Setup Node.js for frontend
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -47,20 +49,31 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
-      - name: Build frontend for CI
+      - name: Build frontend
         working-directory: frontend
         run: npm run build
 
-      - name: Preview frontend (simulates prod environment)
+      - name: Backend - Compile and run unit tests (excluding UI tests)
+        working-directory: backend
+        run: |
+          ./mvnw clean compile
+          ./mvnw test -Dtest="!*UITest,!CucumberTest"
+
+      - name: Backend - Run BDD tests
+        working-directory: backend
+        run: ./mvnw test -Dtest="CucumberTest"
+
+      - name: Start frontend preview server for UI tests
         working-directory: frontend
         run: |
           npm run preview -- --port 5173 --host 0.0.0.0 &
-          echo "Frontend preview started"
+          sleep 5
+          echo "Frontend preview server started"
 
       - name: Wait for frontend to be ready
         run: |
           echo "Waiting for frontend to start..."
-          timeout 30s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+          timeout 60s bash -c 'until curl -f http://localhost:5173 >/dev/null 2>&1; do sleep 2; done' || (echo "Frontend failed to start" && exit 1)
           echo "Frontend is ready"
 
       - name: Setup Chrome for UI tests
@@ -68,19 +81,25 @@ jobs:
         with:
           chrome-version: stable
 
+      - name: Setup virtual display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          sleep 3
+
       - name: Run UI automation tests
         working-directory: backend
-        run: mvn test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
+        run: ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--disable-extensions,--remote-allow-origins=*,--window-size=1920,1080"
         env:
           DISPLAY: ":99"
 
-      - name: Run BDD tests
+      - name: Generate test reports
         working-directory: backend
-        run: mvn test -Dtest="CucumberTest"
-
-      - name: Generate test report
-        working-directory: backend
-        run: mvn surefire-report:report
+        run: |
+          ./mvnw surefire-report:report-only
+          ./mvnw site -DgenerateReports=false
         if: always()
 
       - name: Upload test results
@@ -88,4 +107,13 @@ jobs:
         if: always()
         with:
           name: test-results
-          path: backend/target/surefire-reports/
+          path: |
+            backend/target/surefire-reports/
+            backend/target/site/
+            
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: frontend-build
+          path: frontend/dist/
