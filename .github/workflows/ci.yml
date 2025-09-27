@@ -73,7 +73,8 @@ jobs:
 
       - name: Run UI automation tests
         working-directory: backend
-        run: mvn test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
+        run: |
+          ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080,--user-data-dir=/tmp/chrome-user-data-$RANDOM"
         env:
           DISPLAY: ":99"
 
