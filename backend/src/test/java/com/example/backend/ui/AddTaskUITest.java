@@ -51,7 +51,7 @@ public class AddTaskUITest {
 
         // Login first
         driver.findElement(By.id("email")).sendKeys("test@example.com");
-        driver.findElement(By.id("password")).sendKeys("passsword123");
+        driver.findElement(By.id("password")).sendKeys("password123");
         driver.findElement(By.id("login-btn")).click();
 
         try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
