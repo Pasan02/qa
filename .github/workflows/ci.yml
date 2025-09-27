@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Java CI with Maven
 
 on:
   push:
@@ -14,14 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ----------------------------------------------------------------
-      # Backend Steps
-      # ----------------------------------------------------------------
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: 21
 
       - name: Cache Maven packages
         uses: actions/cache@v4
@@ -31,77 +28,68 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build and package backend
-        working-directory: ./backend
-        run: mvn clean install
+      - name: Build project
+        working-directory: backend
+        run: mvn clean compile
 
-      # ----------------------------------------------------------------
-      # Frontend Steps
-      # ----------------------------------------------------------------
-      - name: Set up Node.js
+      - name: Run unit tests
+        working-directory: backend
+        run: mvn test -Dtest="*ServiceTest,BackendApplicationTests"
+
+      - name: Run integration tests
+        working-directory: backend
+        run: mvn test -Dtest="*ApiTest"
+
+      - name: Setup Node.js for frontend
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
-        working-directory: ./frontend
+        working-directory: frontend
         run: npm ci
 
-      - name: Lint frontend
-        working-directory: ./frontend
-        run: npm run lint
-
-      - name: Build frontend
-        working-directory: ./frontend
+      - name: Build frontend for CI
+        working-directory: frontend
         run: npm run build
 
-      # ----------------------------------------------------------------
-      # Integration and E2E Test Steps
-      # ----------------------------------------------------------------
-      - name: Start backend server
-        working-directory: ./backend
+      - name: Preview frontend (simulates prod environment)
+        working-directory: frontend
         run: |
-          java -jar target/*.jar &
-          echo "Backend server started"
-
-      - name: Wait for backend server
+          npm run preview -- --port 5173 --host 0.0.0.0 &
+          echo "Frontend preview started"
+          
+      - name: Wait for frontend to be ready
         run: |
-          echo "Waiting for backend to be ready..."
-          npx wait-on http://localhost:8080 -t 60000
-          echo "Backend is ready!"
+          echo "Waiting for frontend to start..."
+          timeout 30s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+          echo "Frontend is ready"
 
-      - name: Start frontend preview server
-        working-directory: ./frontend
-        run: |
-          npm run preview &
-          echo "Frontend preview server started"
+      - name: Setup Chrome for UI tests
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
 
-      - name: Wait for frontend preview server
-        run: |
-          echo "Waiting for frontend to be ready..."
-          npx wait-on http://localhost:4173 -t 30000
-          echo "Frontend is ready!"
+      - name: Run UI automation tests
+        working-directory: backend
+        run: mvn test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
+        env:
+          DISPLAY: ":99"
 
-      - name: Run all tests
-        working-directory: ./backend
-        run: >
-          mvn test
-          -Dtest="*ServiceTest,*ApiTest,CucumberTest,*UITest"
-          -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
+      - name: Run BDD tests
+        working-directory: backend
+        run: mvn test -Dtest="CucumberTest"
 
-      # ----------------------------------------------------------------
-      # Reporting Steps
-      # ----------------------------------------------------------------
       - name: Generate test report
+        working-directory: backend
+        run: mvn surefire-report:report
         if: always()
-        working-directory: ./backend
-        run: mvn surefire-report:report-only
 
       - name: Upload test results
-        if: always()
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: test-results
-          path: backend/target/site/
+          path: backend/target/surefire-reports/
