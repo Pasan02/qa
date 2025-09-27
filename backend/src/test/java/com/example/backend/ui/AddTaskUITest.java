@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -17,6 +18,7 @@ import com.example.backend.service.SignupRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class AddTaskUITest {
+@SpringBootTest
 
     @Autowired
     private UserService userService;
