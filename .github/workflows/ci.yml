@@ -71,10 +71,11 @@ jobs:
         with:
           chrome-version: stable
 
+
       - name: Run UI automation tests
         working-directory: backend
         run: |
-          ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080,--user-data-dir=/tmp/chrome-user-data-$RANDOM"
+          ./mvnw test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080,--user-data-dir=/tmp/chrome-user-data-${{ github.run_id }}"
         env:
           DISPLAY: ":99"
 
