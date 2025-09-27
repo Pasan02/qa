@@ -28,6 +28,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Make Maven Wrapper executable
+        run: chmod +x backend/mvnw
+
       - name: Build and run all backend tests
         working-directory: backend
         run: |
