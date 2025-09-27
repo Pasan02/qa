@@ -3,6 +3,7 @@ package com.example.backend.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import com.example.backend.service.Task;
 import com.example.backend.service.TaskRequest;
 import com.example.backend.service.TaskService;
@@ -37,7 +38,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody TaskRequest request,
+    public ResponseEntity<Task> createTask(@Valid @RequestBody TaskRequest request,
                                            @RequestHeader(value = "Authorization", required = false) String authorization) {
         Long ownerId = null;
         if (authorization != null && authorization.startsWith("Bearer ")) {
@@ -49,7 +50,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody TaskRequest request) {
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest request) {
         Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isEmpty()) {
             return ResponseEntity.notFound().build();

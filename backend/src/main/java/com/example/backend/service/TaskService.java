@@ -2,17 +2,15 @@ package com.example.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 import com.example.backend.repository.TaskRepository;
 
-import jakarta.validation.Valid;
+// ...existing imports...
 
 /**
  * Service for managing tasks.
  */
 @Service
-@Validated
 public class TaskService {
 
     @Autowired
@@ -24,7 +22,7 @@ public class TaskService {
      * @return Task
      * @throws IllegalArgumentException if title is blank
      */
-    public Task createTask(@Valid TaskRequest request) {
+    public Task createTask(TaskRequest request) {
         // Additional validation if needed
         if (request.title() == null || request.title().trim().isEmpty()) {
             throw new IllegalArgumentException("Task title must not be blank");
@@ -35,7 +33,7 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task createTask(@Valid TaskRequest request, Long ownerId) {
+    public Task createTask(TaskRequest request, Long ownerId) {
         Task task = new Task(request.title(), request.description());
         if (ownerId != null) {
             User owner = new User();

@@ -1,15 +1,18 @@
 package com.example.backend.api;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.example.backend.service.UserService;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.SignupRequest;
 import com.example.backend.service.User;
-
-import java.util.Map;
+import com.example.backend.service.UserService;
 
 @RestController
 @RequestMapping("/api/auth")

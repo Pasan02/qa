@@ -52,7 +52,7 @@ public class LoginUITest {
         driver.get("http://localhost:5173/login");
 
         driver.findElement(By.id("email")).sendKeys("test@example.com");
-        driver.findElement(By.id("password")).sendKeys("strongpass");
+        driver.findElement(By.id("password")).sendKeys("password123");
         driver.findElement(By.id("login-btn")).click();
 
         // Wait for UI update

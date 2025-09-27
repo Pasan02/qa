@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import com.example.backend.repository.UserRepository;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
@@ -20,12 +19,13 @@ import jakarta.validation.Validator;
 @Validated
 public class UserService {
 
-    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     
     @Autowired
     private UserRepository userRepository;
 
-    public User signup(@Valid SignupRequest request) {
+    public User signup(SignupRequest request) {
+        // perform validation and throw IllegalArgumentException on first violation
         Set<ConstraintViolation<SignupRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
             String message = violations.iterator().next().getMessage();
