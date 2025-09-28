@@ -76,11 +76,11 @@ jobs:
           timeout 30s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
           echo "Frontend is ready"
 
-      # Start backend for UI tests (uses test profile with H2 DB or now MySQL via service)
+      # Start backend for UI tests (uses test profile with H2 DB, overridden via env for reliability)
       - name: Start backend for UI tests
         working-directory: backend
         run: |
-          mvn spring-boot:run -Dspring-boot.run.profiles=test &
+          SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver SPRING_DATASOURCE_USERNAME=sa SPRING_DATASOURCE_PASSWORD= SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.H2Dialect mvn spring-boot:run -Dspring-boot.run.profiles=test &
           echo "Backend started in background"
           # Wait for backend to be ready (adjust timeout if needed)
           timeout 30s bash -c 'until curl -f http://localhost:8081/api/tasks; do sleep 2; done'
