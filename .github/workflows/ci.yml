@@ -9,6 +9,15 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h localhost -u root -prootpassword" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout code
@@ -67,7 +76,7 @@ jobs:
           timeout 30s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
           echo "Frontend is ready"
 
-      # NEW: Start backend for UI tests (uses test profile with H2 DB)
+      # Start backend for UI tests (uses test profile with H2 DB or now MySQL via service)
       - name: Start backend for UI tests
         working-directory: backend
         run: |
@@ -88,7 +97,7 @@ jobs:
         env:
           DISPLAY: ":99"
 
-      # NEW: Stop backend after UI tests
+      # Stop backend after UI tests
       - name: Stop backend
         run: |
           pkill -f "spring-boot:run" || true
