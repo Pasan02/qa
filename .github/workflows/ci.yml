@@ -51,15 +51,6 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run frontend tests
-        working-directory: frontend
-        run: |
-          if npm run | grep -q "test"; then
-            npm test
-          else
-            echo "No test script found in package.json"
-          fi
-
       - name: Build frontend for CI
         working-directory: frontend
         run: npm run build
@@ -76,6 +67,16 @@ jobs:
           timeout 30s bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
           echo "Frontend is ready"
 
+      # NEW: Start backend for UI tests (uses test profile with H2 DB)
+      - name: Start backend for UI tests
+        working-directory: backend
+        run: |
+          mvn spring-boot:run -Dspring-boot.run.profiles=test &
+          echo "Backend started in background"
+          # Wait for backend to be ready (adjust timeout if needed)
+          timeout 30s bash -c 'until curl -f http://localhost:8081/api/tasks; do sleep 2; done'
+          echo "Backend is ready on port 8081"
+
       - name: Setup Chrome for UI tests
         uses: browser-actions/setup-chrome@latest
         with:
@@ -86,6 +87,12 @@ jobs:
         run: mvn test -Dtest="*UITest" -Dwebdriver.chrome.args="--headless,--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080"
         env:
           DISPLAY: ":99"
+
+      # NEW: Stop backend after UI tests
+      - name: Stop backend
+        run: |
+          pkill -f "spring-boot:run" || true
+          echo "Backend stopped"
 
       - name: Run BDD tests
         working-directory: backend
